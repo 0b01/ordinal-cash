@@ -1,0 +1,1 @@
+// https://github.com/iden3/snarkjs/blob/master/templates/verifier_groth16.sol
