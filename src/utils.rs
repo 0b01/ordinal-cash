@@ -54,17 +54,17 @@ pub fn mulmod(mut a: U256, mut b: U256, m: U256) -> U256 {
     while a != U256::new(0) {
         if a & U256::new(1) != U256::ZERO {
             /* Add b to res, modulo m, without overflow */
-            if b >= m - res /* Equiv to if (res + b >= m), without overflow */
+            if b >= m.wrapping_sub(res) /* Equiv to if (res + b >= m), without overflow */
             {
                 res = res.wrapping_sub(m);
             }
             res = res.wrapping_add(b);
         }
-        a >>= 1;
+        a = a / 2;
 
         /* Double b, modulo m */
         temp_b = b;
-        if b >= m - b       /* Equiv to if (2 * b >= m), without overflow */
+        if b >= m.wrapping_sub(b)       /* Equiv to if (2 * b >= m), without overflow */
         {
             temp_b = temp_b.wrapping_sub(m);
         }
@@ -72,7 +72,6 @@ pub fn mulmod(mut a: U256, mut b: U256, m: U256) -> U256 {
     }
     return res;
 }
-
 
 #[cfg(test)]
 mod tests {
