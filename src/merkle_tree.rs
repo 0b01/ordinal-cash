@@ -112,7 +112,7 @@ impl MerkleTreeWithHistory {
         Some(self.nextIndex as usize - 1)
     }
 
-    pub fn isKnownRoot(&self, root: U256) -> bool {
+    pub fn is_known_root(&self, root: U256) -> bool {
         if root == 0 {
             return false;
         }
@@ -273,9 +273,9 @@ mod tests {
 
         for i in 1..5 {
             mt.insert(U256::new(i));
-            assert!(mt.isKnownRoot(mt.roots[0]));
+            assert!(mt.is_known_root(mt.roots[0]));
         }
 
-        assert!(!mt.isKnownRoot(U256::new(0)));
+        assert!(!mt.is_known_root(U256::new(0)));
     }
 }

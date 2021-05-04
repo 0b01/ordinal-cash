@@ -7,6 +7,12 @@ use ark_ec::{AffineCurve, PairingEngine, ProjectiveCurve};
 use ark_ff::{field_new, fields::Field, BigInteger, BigInteger256, One, PrimeField, Zero};
 use ark_groth16::{prepare_verifying_key, VerifyingKey};
 
+pub struct Proof {
+    a: G1Affine,
+    b: G2Affine,
+    c: G1Affine,
+}
+
 // #[derive(Default)]
 // pub struct VerifyingKey {
 //     pub alpha_g1: G1Affine,
@@ -202,14 +208,8 @@ fn pcs(ps: &[G1Affine], qs: &[G2Affine]) -> bool {
     acc.is_one()
 }
 
-struct Proof {
-    a: G1Affine,
-    b: G2Affine,
-    c: G1Affine,
-}
-
 #[deprecated = "using ark-groth17 for now"]
-fn verify_proof(proof: Proof, input: &[Fr]) -> bool {
+pub fn verify_proof(proof: Proof, input: &[Fr]) -> bool {
     assert!(input.len() == 6);
     let vk = verifying_key();
 
