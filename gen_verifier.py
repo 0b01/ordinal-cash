@@ -16,8 +16,8 @@ d = json.loads(txt)
 
 def p1(property, alpha):
     alpha_txt = '''vk.{property} = G1Affine::new(
-        U256::new(BigInteger256::new({0})), // {c0}
-        U256::new(BigInteger256::new({1})), // {c1}
+        field_new!(Fq, "{c0}"),
+        field_new!(Fq, "{c1}"),
         false);
     '''.format(
         convert(int(alpha[0])),
@@ -31,13 +31,15 @@ def p1(property, alpha):
 
 def p2(property, beta):
     beta_txt = """vk.{property} = G2Affine::new(
-        ark_ff::Fp2::new(
-            U256::new(BigInteger256::new({0})), // {c0}
-            U256::new(BigInteger256::new({1})), // {c1}
+        field_new!(
+            Fq2,
+            field_new!(Fq, "{c0}"),
+            field_new!(Fq, "{c1}")
         ),
-        ark_ff::Fp2::new(
-            U256::new(BigInteger256::new({2})), // {c2}
-            U256::new(BigInteger256::new({3})), // {c3}
+        field_new!(
+            Fq2,
+            field_new!(Fq, "{c2}"),
+            field_new!(Fq, "{c3}")
         ),
         false,
     );""".format(
