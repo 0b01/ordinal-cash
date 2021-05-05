@@ -1,45 +1,46 @@
 use ethnum::U256;
 
-pub fn add(x: U256, y: U256) -> U256 {
-    let (out, _carry) = x.overflowing_add(y);
-    return out;
-}
-
-pub fn addmod(x: U256, y: U256, m: U256) -> U256 {
-    let (out, carry) = x.overflowing_add(y);
+pub fn addmod(x: &U256, y: &U256, m: &U256) -> U256 {
+    let (out, carry) = x.overflowing_add(*y);
     // In textbook 14.27, says addmod is add and an extra step: subtract m iff x+y>=m
-    if carry || m <= out {
+    if carry || m <= &out {
         out % m
     } else {
         out
     }
 }
 
-pub fn normalize(a: U256, p: U256) -> U256 {
-    if a < U256::new(0) {
+pub fn normalize(a: &U256, p: &U256) -> U256 {
+    if a < &U256::new(0) {
         p - ((a.overflowing_neg().0) % p)
     } else {
         a % p
     }
 }
 
-pub fn mod_pow(mut base: U256, mut exp: U256, modulus: U256) -> U256 {
-    if modulus == 1 {
+pub fn mod_pow(base: &U256, exp: &U256, modulus: &U256) -> U256 {
+    if modulus == &1 {
         return U256::new(0);
     }
     let mut result = U256::new(1);
+    let mut base = *base;
+    let mut exp = *exp;
     base = base % modulus;
     while exp > 0 {
         if exp % 2 == 1 {
-            result = mulmod(result, base, modulus);
+            result = mulmod(&result, &base, &modulus);
         }
         exp /= 2;
-        base = mulmod(base, base, modulus)
+        base = mulmod(&base, &base, &modulus)
     }
     result
 }
 
-pub fn mulmod(mut a: U256, mut b: U256, m: U256) -> U256 {
+pub fn mulmod(a: &U256, b: &U256, m: &U256) -> U256 {
+    let mut a = *a;
+    let mut b = *b;
+    let m = *m;
+
     let mut res = U256::ZERO;
     let mut temp_b;
 
@@ -85,7 +86,7 @@ mod tests {
         let a = U256::new(1);
         let b = U256::new(2);
         let m = U256::new(10);
-        assert_eq!(U256::new(3), addmod(a, b, m));
+        assert_eq!(U256::new(3), addmod(&a, &b, &m));
     }
 
     #[test]
@@ -93,7 +94,7 @@ mod tests {
         let a = U256::new(9);
         let b = U256::new(9);
         let m = U256::new(10);
-        assert_eq!(U256::new(8), addmod(a, b, m));
+        assert_eq!(U256::new(8), addmod(&a, &b, &m));
     }
 
     #[test]
@@ -109,7 +110,7 @@ mod tests {
         )
         .unwrap();
         let b = m - a + 1;
-        assert_eq!(U256::new(1), addmod(a, b, m));
+        assert_eq!(U256::new(1), addmod(&a, &b, &m));
     }
 
     #[test]
@@ -131,6 +132,6 @@ mod tests {
         )
         .unwrap();
 
-        assert_eq!(mod_pow(b, e, m), expected);
+        assert_eq!(mod_pow(&b, &e, &m), expected);
     }
 }

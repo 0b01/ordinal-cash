@@ -199,22 +199,29 @@ fn verifying_key() -> VerifyingKey<Bn254> {
     vk
 }
 
+fn pairing(p: G1Affine, q: G2Affine) -> Fq12 {
+    let g1_prep = ark_ec::bn::G1Prepared::<ark_bn254::Parameters>::from(p);
+    let g2_prep = ark_ec::bn::G2Prepared::<ark_bn254::Parameters>::from(q);
+    let t = (g1_prep, g2_prep);
+    let it = core::iter::once(&t);
+    Bn254::final_exponentiation(&Bn254::miller_loop(it)).unwrap()
+    // Bn254::product_of_pairings(it)
+}
+
 fn pcs(ps: &[G1Affine], qs: &[G2Affine]) -> bool {
     let mut acc = Fq12::one();
     for (p, q) in ps.iter().zip(qs.iter()) {
-        acc *= Bn254::pairing(*p, *q);
+        acc *= pairing(*p, *q);
     }
     // dbg!(acc.is_one());
     acc.is_one()
 }
 
-#[deprecated = "using ark-groth17 for now"]
 pub fn verify_proof(proof: Proof, input: &[Fr]) -> bool {
     assert!(input.len() == 6);
-    let vk = verifying_key();
+    let vk = Box::new(verifying_key());
 
-    let mut vk_x = G1Affine::zero();
-    vk_x += &vk.gamma_abc_g1[0];
+    let mut vk_x = vk.gamma_abc_g1[0];
     for i in 0..6 {
         vk_x += &(vk.gamma_abc_g1[i + 1]
             .mul(input[i].into_repr())
@@ -222,8 +229,8 @@ pub fn verify_proof(proof: Proof, input: &[Fr]) -> bool {
     }
 
     pcs(
-        &[-proof.a, vk.alpha_g1, vk_x, proof.c],
-        &[proof.b, vk.beta_g2, vk.gamma_g2, vk.delta_g2],
+        &vec![-proof.a, vk.alpha_g1, vk_x, proof.c],
+        &vec![proof.b, vk.beta_g2, vk.gamma_g2, vk.delta_g2],
     )
 }
 

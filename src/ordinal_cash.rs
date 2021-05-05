@@ -29,7 +29,7 @@ impl<O: Ordinal> OrdinalCash<O> {
             // The commitment already exists
             None
         } else {
-            let inserted_index = self.mt.insert(commitment)?;
+            let inserted_index = self.mt.insert(&commitment)?;
             self.commitments.insert(commitment, true);
             self.o.process_deposit(commitment, inserted_index);
             Some(())
@@ -40,7 +40,7 @@ impl<O: Ordinal> OrdinalCash<O> {
         // require(_fee <= denomination, "Fee exceeds transfer value");
         if self.nullifier_hashes.contains_key(&nh) && !self.nullifier_hashes[&nh] {
             Err("The note has been already spent")
-        } else if !self.mt.is_known_root(root) {
+        } else if !self.mt.is_known_root(&root) {
             Err("Cannot find your merkle root")
         } else if !crate::pairing::verify_proof(proof, &[
                 to_fr(&root)?,
@@ -63,7 +63,7 @@ impl<O: Ordinal> OrdinalCash<O> {
 pub fn to_fr(e: &U256) -> Result<ark_bn254::Fr, &'static str> {
     use ark_ff::FromBytes;
     let bytes = e.to_le_bytes();
-    Fr::read(std::io::Cursor::new(bytes)).map_err(|_| "cannot read bytes")
+    Fr::read(bytes.as_ref()).map_err(|_| "cannot read bytes")
 }
 
 pub struct SplOrdinal;
