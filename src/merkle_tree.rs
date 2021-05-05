@@ -173,7 +173,6 @@ mod tests {
             10,
         )
         .unwrap();
-        dbg!(mt.currentRootIndex);
         let root = mt.getLastRoot();
         assert_eq!(root, expected);
     }
@@ -277,5 +276,21 @@ mod tests {
         }
 
         assert!(!mt.is_known_root(U256::new(0)));
+    }
+
+    #[test]
+    fn test_insert_root() {
+        let mut mt = MerkleTreeWithHistory::new(16);
+        mt.insert(U256::from_str_radix("8144601074668623426925770169834644636770764159380454737463139103752848208415", 10).unwrap());
+        let expected_root = U256::from_str_radix("18759831220824932236585314001088159476096807910838182935046606337929711439019", 10).unwrap();
+        assert_eq!(expected_root, mt.roots[1]);
+    }
+
+    #[test]
+    fn test_insert_root_2() {
+        let mut mt = MerkleTreeWithHistory::new(20);
+        mt.insert(U256::from_str_radix("8144601074668623426925770169834644636770764159380454737463139103752848208415", 10).unwrap());
+        let expected_root = U256::from_str_radix("18141211044530898481780712096785380507009040886197825359491225784587697908689", 10).unwrap();
+        assert_eq!(expected_root, mt.roots[1]);
     }
 }
