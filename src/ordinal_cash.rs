@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 use ark_ff::{field_new};
 use ark_bn254::{Fr, Fq, Fq2, G1Affine, G2Affine};
-use crate::{merkle_tree::MerkleTreeWithHistory, U256, Proof};
+use crate::{merkle_tree::MerkleTreeWithHistory, U256, Proof, bignum};
 
 pub trait Ordinal {
     fn process_deposit(&mut self, commitment: U256, inserted_index: usize);
@@ -36,7 +36,7 @@ impl<O: Ordinal> OrdinalCash<O> {
         }
     }
 
-    pub fn withdraw(&mut self, proof: Proof, root: U256, nh: U256, recipient: crate::Address, relayer: crate::Address, fee: U256, refund: U256) -> Result<(), &'static str> {
+    pub fn withdraw(&mut self, proof: Proof, root: &U256, nh: &U256, recipient: &U256, relayer: &U256, fee: &U256, refund: &U256) -> Result<(), &'static str> {
         // require(_fee <= denomination, "Fee exceeds transfer value");
         if self.nullifier_hashes.contains_key(&nh) && !self.nullifier_hashes[&nh] {
             Err("The note has been already spent")
@@ -52,8 +52,8 @@ impl<O: Ordinal> OrdinalCash<O> {
             ]) {
             Err("Invalid withdraw proof")
         } else {
-            self.nullifier_hashes.insert(nh, true);
-            self.o.process_withdraw(recipient, relayer, fee, refund);
+            self.nullifier_hashes.insert(*nh, true);
+            self.o.process_withdraw(*recipient, *relayer, *fee, *refund);
             // emit Withdrawal(_recipient, _nullifierHash, _relayer, _fee);
             Ok(())
         }
@@ -104,7 +104,7 @@ mod tests {
         use ark_ff::PrimeField;
         assert_eq!(
             field_new!(Fr, "18141211044530898481780712096785380507009040886197825359491225784587697908689"),
-            to_fr(&U256::from_str_radix("18141211044530898481780712096785380507009040886197825359491225784587697908689", 10).unwrap()).unwrap(),
+            to_fr(&*bignum!("18141211044530898481780712096785380507009040886197825359491225784587697908689")).unwrap(),
         );
     }
 
@@ -114,8 +114,8 @@ mod tests {
         let levels = 20;
         let mut o = OrdinalCash::new(levels, SplOrdinal);
         // 8144601074668623426925770169834644636770764159380454737463139103752848208415
-        let commitment = U256::from_str_radix("8144601074668623426925770169834644636770764159380454737463139103752848208415", 10).unwrap();
-        assert!(o.deposit(commitment).is_some());
+        let commitment = bignum!("8144601074668623426925770169834644636770764159380454737463139103752848208415");
+        assert!(o.deposit(*commitment).is_some());
 
         /*
         let proofData = {
@@ -202,12 +202,12 @@ mod tests {
         );
 
         let ret = o.withdraw(Proof{a,b,c},
-            U256::from_str_radix("18141211044530898481780712096785380507009040886197825359491225784587697908689", 10).unwrap(),
-            U256::from_str_radix("17369391381428457005685637744737812745147294406289952788882032335952086150537", 10).unwrap(),
-            U256::from_str_radix("617288482572789990873151114501867268774234674064", 10).unwrap(),
-            U256::from_str_radix("827641930419614124039720421795580660909102123457", 10).unwrap(),
-            U256::from_str_radix("50000000000000000", 10).unwrap(),
-            U256::from_str_radix("0", 10).unwrap(),
+            &*bignum!("18141211044530898481780712096785380507009040886197825359491225784587697908689"),
+            &*bignum!("17369391381428457005685637744737812745147294406289952788882032335952086150537"),
+            &*bignum!("617288482572789990873151114501867268774234674064"),
+            &*bignum!("827641930419614124039720421795580660909102123457"),
+            &*bignum!("50000000000000000"),
+            &*bignum!("0"),
         );
 
         assert!(ret.is_ok());

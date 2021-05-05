@@ -6,6 +6,7 @@ edition = "2018"
 
 [dependencies]
 ethnum = "1"
+ordinal-macros = { version = "0.2.0", path = "./ordinal-macros" }
 ark-std = { version = "0.2.0", default-features = false, features = [] }
 ark-bn254 = { version = "0.2.0", default-features = false, features = ["curve"] }
 ark-groth16 = { version = "0.2.0", default-features = false, features = [] }
